@@ -1,20 +1,13 @@
 import DBHelper from './dbhelper';
 
-// let restaurants,
-//   neighborhoods,
-//   cuisines
-// var newMap
-// var markers = []
-
 /**
  * Fetch neighborhoods and cuisines as soon as the page is loaded.
  */
 document.addEventListener('DOMContentLoaded', (event) => {
+  registerServiceWorker();  // Register service worker
   initMap(); // added
   fetchNeighborhoods();
   fetchCuisines();
-  // Register service worker
-  registerServiceWorker();
 
   const neighborhoodsSelect = document.getElementById('neighborhoods-select');
   neighborhoodsSelect.addEventListener('change', updateRestaurants);
@@ -22,6 +15,30 @@ document.addEventListener('DOMContentLoaded', (event) => {
   const cuisinesSelect = document.getElementById('cuisines-select');
   cuisinesSelect.addEventListener('change', updateRestaurants);
 });
+
+/**
+ * Lazy load pictures and image content
+ */
+const lazyLoadImages = () => {
+  const lazyPictures = [].slice.call(document.querySelectorAll('picture.lazy'));
+  if ('IntersectionObserver' in window) {
+    const lazyPictureObserver = new IntersectionObserver((pictures) => {
+      pictures.forEach((picture) => {
+        if (picture.isIntersecting) {
+          const lazyPicture = picture.target;
+          lazyPicture.childNodes[0].srcset = lazyPicture.childNodes[0].dataset.srcset;
+          lazyPicture.childNodes[1].srcset = lazyPicture.childNodes[1].dataset.srcset;
+          lazyPicture.childNodes[2].src = lazyPicture.childNodes[2].dataset.src;
+          lazyPicture.classList.remove('lazy');
+          lazyPictureObserver.unobserve(lazyPicture);
+        }
+      });
+    });
+    lazyPictures.forEach((lazyPicture) => {
+      lazyPictureObserver.observe(lazyPicture);
+    });
+  }
+};
 
 /**
  * Register a service worker for caching static and dynamic assets.
@@ -162,6 +179,7 @@ const fillRestaurantsHTML = (restaurants = self.restaurants) => {
     ul.append(createRestaurantHTML(restaurant));
   });
   addMarkersToMap();
+  lazyLoadImages();
 }
 
 /**
@@ -174,15 +192,17 @@ const createRestaurantHTML = (restaurant) => {
   const webPsource = document.createElement('source');
   const jpegSource = document.createElement('source');
 
+  picture.className = 'lazy';
+  webPsource.dataset.srcset = DBHelper.webPImageUrlForRestaurant(restaurant);
   webPsource.srcset = DBHelper.webPImageUrlForRestaurant(restaurant);
   webPsource.type = 'image/webp';
 
-  jpegSource.srcset = DBHelper.jpegImageUrlForRestaurant(restaurant);
+  jpegSource.dataset.srcset = DBHelper.jpegImageUrlForRestaurant(restaurant);
   jpegSource.type = 'image/jpeg';
 
   const image = document.createElement('img');
   image.className = 'restaurant-img';
-  image.src = DBHelper.jpegImageUrlForRestaurant(restaurant);
+  image.dataset.src = DBHelper.jpegImageUrlForRestaurant(restaurant);
   // Add alt-text for restaurant images according to restaurant names.
   image.alt = `Name of the restaurant: ${restaurant.name}`;
 

@@ -1,1 +1,13 @@
 node_modules
+index.html.gz
+restaurant.html.gz
+css/styles.css.gz
+css/styles.min.css.gz
+js/dbhelper.js.gz
+js/index.min.js.gz
+js/main.js.gz
+js/restaurant.min.js.gz
+js/restaurant_info.js.gz
+cert.pem
+key.pem
+simplehttp2server_windows_amd64.exe

@@ -40,12 +40,14 @@ self.addEventListener('activate', (event) => {
         cacheNames.filter((cacheName) => {
           return cacheName.startsWith('restaurant-') && cacheName !== staticCacheName;
         })
-          .map((cacheName) => {
-            return caches.delete(cacheName);
-          })
-      );
+        .map((cacheName) => {
+          return caches.delete(cacheName);
+        })
+      ).catch((error) => {
+        console.log('Some error occurred while removing existing cache!' + error);
+      });
     }).catch((error) => {
-      console.log('Some error occurred!' + error);
+      console.log('Some error occurred while removing existing cache!' + error);
     }));
 });
 
