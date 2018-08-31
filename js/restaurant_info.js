@@ -1,15 +1,21 @@
-let restaurant;
-var newMap;
+import DBHelper from './dbhelper';
 
-/*Initialize map as soon as the page is loaded.*/
+// let restaurant;
+// var newMap;
+
+/**
+ * Initialize map as soon as the page is loaded.
+ */
 document.addEventListener('DOMContentLoaded', (event) => {
   initMap();
 });
 
-/*Initialize leaflet map*/
-initMap = () => {
+/**
+ * Initialize leaflet map
+ */
+const initMap = () => {
   fetchRestaurantFromURL((error, restaurant) => {
-    if (error) {
+    if (error) { // Got an error!
       console.error(error);
     } else {
       self.newMap = L.map('map', {
@@ -24,15 +30,17 @@ initMap = () => {
           '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
           'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
         id: 'mapbox.streets'
-      }).addTo(newMap);
+      }).addTo(self.newMap);
       fillBreadcrumb();
       DBHelper.mapMarkerForRestaurant(self.restaurant, self.newMap);
     }
   });
 }
 
-/*Get current restaurant from page URL.*/
-fetchRestaurantFromURL = (callback) => {
+/**
+ * Get current restaurant from page URL.
+ */
+const fetchRestaurantFromURL = (callback) => {
   if (self.restaurant) { // restaurant already fetched!
     callback(null, self.restaurant)
     return;
@@ -54,18 +62,36 @@ fetchRestaurantFromURL = (callback) => {
   }
 }
 
-/*Create restaurant HTML and add it to the webpage*/
-fillRestaurantHTML = (restaurant = self.restaurant) => {
+/**
+ * Create restaurant HTML and add it to the webpage
+ */
+const fillRestaurantHTML = (restaurant = self.restaurant) => {
   const name = document.getElementById('restaurant-name');
   name.innerHTML = restaurant.name;
 
   const address = document.getElementById('restaurant-address');
   address.innerHTML = restaurant.address;
 
-  const image = document.getElementById('restaurant-img');
+  const picture = document.getElementById('restaurant-picture');
+  const webPsource = document.createElement('source');
+  const jpegSource = document.createElement('source');
+
+  webPsource.srcset = DBHelper.webPImageUrlForRestaurant(restaurant);
+  webPsource.type = 'image/webp';
+
+  jpegSource.srcset = DBHelper.jpegImageUrlForRestaurant(restaurant);
+  jpegSource.type = 'image/jpeg';
+
+  const image = document.createElement('img');
+  image.id = 'restaurant-img';
   image.className = 'restaurant-img'
-  image.src = DBHelper.imageUrlForRestaurant(restaurant);
-  image.alt = `Restaurant name : ${restaurant.name}`;
+  image.src = DBHelper.jpegImageUrlForRestaurant(restaurant);
+  // Add alt-text for image according to restaurant name.
+  image.alt = `Name of the restaurant: ${restaurant.name}`;
+
+  picture.appendChild(webPsource);
+  picture.appendChild(jpegSource);
+  picture.appendChild(image);
 
   const cuisine = document.getElementById('restaurant-cuisine');
   cuisine.innerHTML = restaurant.cuisine_type;
@@ -78,8 +104,10 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   fillReviewsHTML();
 }
 
-/*Create restaurant operating hours HTML table and add it to the webpage.*/
-fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => {
+/**
+ * Create restaurant operating hours HTML table and add it to the webpage.
+ */
+const fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => {
   const hours = document.getElementById('restaurant-hours');
   for (let key in operatingHours) {
     const row = document.createElement('tr');
@@ -96,8 +124,10 @@ fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => 
   }
 }
 
-/*Create all reviews HTML and add them to the webpage.*/
-fillReviewsHTML = (reviews = self.restaurant.reviews) => {
+/**
+ * Create all reviews HTML and add them to the webpage.
+ */
+const fillReviewsHTML = (reviews = self.restaurant.reviews) => {
   const container = document.getElementById('reviews-container');
   const title = document.createElement('h2');
   title.innerHTML = 'Reviews';
@@ -116,8 +146,10 @@ fillReviewsHTML = (reviews = self.restaurant.reviews) => {
   container.appendChild(ul);
 }
 
-/*Create review HTML and add it to the webpage.*/
-createReviewHTML = (review) => {
+/**
+ * Create review HTML and add it to the webpage.
+ */
+const createReviewHTML = (review) => {
   const li = document.createElement('li');
   const name = document.createElement('p');
   name.innerHTML = review.name;
@@ -138,16 +170,20 @@ createReviewHTML = (review) => {
   return li;
 }
 
-/*Add restaurant name to the breadcrumb navigation menu*/
-fillBreadcrumb = (restaurant = self.restaurant) => {
+/**
+ * Add restaurant name to the breadcrumb navigation menu
+ */
+const fillBreadcrumb = (restaurant = self.restaurant) => {
   const breadcrumb = document.getElementById('breadcrumb');
   const li = document.createElement('li');
   li.innerHTML = restaurant.name;
   breadcrumb.appendChild(li);
 }
 
-/*Get a parameter by name from page URL.*/
-getParameterByName = (name, url) => {
+/**
+ * Get a parameter by name from page URL.
+ */
+const getParameterByName = (name, url) => {
   if (!url)
     url = window.location.href;
   name = name.replace(/[\[\]]/g, '\\$&');

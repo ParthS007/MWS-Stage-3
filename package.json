@@ -1,0 +1,37 @@
+{
+  "name": "mws-stage-2",
+  "version": "1.0.0",
+  "description": "Application for Restaurant Reviews App Stage 2 of Mobile Web Specialist Nanodegree",
+  "main": "gulpfile.js",
+  "scripts": {
+    "test": "echo \\\"Error: no test specified\\\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ParthS007/MWS-Stage-2.git"
+  },
+  "author": "Parth Shandilya",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ParthS007/MWS-Stage-2/issues"
+  },
+  "homepage": "https://github.com/ParthS007/MWS-Stage-2#readme",
+  "devDependencies": {
+    "babel-core": "^6.26.3",
+    "babel-preset-env": "^1.7.0",
+    "babelify": "^8.0.0",
+    "browserify": "^16.2.2",
+    "gulp": "^3.9.1",
+    "gulp-autoprefixer": "^5.0.0",
+    "gulp-clean-css": "^3.9.4",
+    "gulp-rename": "^1.4.0",
+    "gulp-sourcemaps": "^2.6.4",
+    "gulp-uglify": "^3.0.0",
+    "gulp-webp": "^3.0.0",
+    "vinyl-buffer": "^1.0.1",
+    "vinyl-source-stream": "^2.0.0"
+  },
+  "dependencies": {
+    "idb": "^2.1.3"
+  }
+}
