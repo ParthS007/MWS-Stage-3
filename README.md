@@ -2,11 +2,11 @@
 ---
 #### _Three Stage Course Material Project - Restaurant Reviews_
 
-# Project Overview: Stage 2
+# Project Overview: Stage 3
 
 ## Client Side
 
-For the **Restaurant Reviews** projects, you will incrementally convert a static webpage to a mobile-ready web application. In **Stage One**, you will take a static design that lacks accessibility and convert the design to be responsive on different sized displays and accessible for screen reader use. You will also add a service worker to begin the process of creating a seamless offline experience for your users.
+For the **Restaurant Reviews** projects, I will incrementally convert a static webpage to a mobile-ready web application. In **Stage Three**, I have taken the connected application built in Stage One and Stage Two and added additional functionality. I have added a form to allow users to create their own reviews. If the app is offline, form will defer updating to the remote database until a connection is established. Finally, I have worked to optimizing the site to meet even stricter performance benchmarks than the previous project, and test again using Lighthouse.
 
 ### Specification
 

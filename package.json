@@ -1,40 +1,48 @@
 {
-  "name": "mws-stage-2",
+  "name": "mws-stage-3",
   "version": "1.0.0",
-  "description": "Application for Restaurant Reviews App Stage 2 of Mobile Web Specialist Nanodegree",
-  "main": "gulpfile.js",
+  "description": "Application for Restaurant Reviews App Stage 3 of Mobile Web Specialist Nanodegree",
+  "main": "sw.js",
   "scripts": {
     "test": "echo \\\"Error: no test specified\\\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ParthS007/MWS-Stage-2.git"
+    "url": "git+https://github.com/ParthS007/MWS-Stage-3.git"
   },
   "author": "Parth Shandilya",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/ParthS007/MWS-Stage-2/issues"
+    "url": "https://github.com/ParthS007/MWS-Stage-3/issues"
   },
-  "homepage": "https://github.com/ParthS007/MWS-Stage-2#readme",
+  "homepage": "https://github.com/ParthS007/MWS-Stage-3#readme",
   "devDependencies": {
+    "babel-cli": "^6.26.0",
     "babel-core": "^6.26.3",
     "babel-preset-env": "^1.7.0",
-    "babelify": "^8.0.0",
-    "browserify": "^16.2.2",
-    "connect-gzip-static": "^2.1.1",
+    "babel-preset-es2015": "^6.24.1",
     "gulp": "^3.9.1",
-    "gulp-autoprefixer": "^5.0.0",
-    "gulp-clean-css": "^3.9.4",
-    "gulp-connect": "^5.5.0",
-    "gulp-gzip": "^1.4.2",
-    "gulp-rename": "^1.4.0",
+    "gulp-babel": "^7.0.1",
+    "gulp-concat": "^2.6.1",
+    "gulp-install": "^1.1.0",
+    "gulp-jshint": "^2.1.0",
+    "gulp-load-plugins": "^1.5.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-sass": "^3.1.0",
     "gulp-sourcemaps": "^2.6.4",
     "gulp-uglify": "^3.0.0",
+    "gulp-util": "^3.0.8",
+    "gulp-imagemin": "^4.1.0",
     "gulp-webp": "^3.0.0",
-    "vinyl-buffer": "^1.0.1",
-    "vinyl-source-stream": "^2.0.0"
+    "gulp-htmlmin": "^4.0.0",
+    "jshint": "^2.9.5",
+    "jshint-stylish": "^2.2.1",
+    "nodemon": "^1.11.0"
   },
   "dependencies": {
-    "idb": "^2.1.3"
+    "babel": "^6.23.0",
+    "idb": "^2.1.1",
+    "imagemin": "^5.3.1",
+    "imagemin-webp": "^4.1.0"
   }
 }

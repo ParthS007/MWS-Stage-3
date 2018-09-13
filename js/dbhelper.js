@@ -2,53 +2,55 @@
  * Common database helper functions.
  */
 
-import idb from 'idb';
 
 class DBHelper {
 
   /**
    * Database URL.
-   * Change this to restaurants.json file location on your server.
-   */
+  */
+
   static get DATABASE_URL() {
-    const port = 1337 // Change this to your server port
-    return `http://localhost:${port}/restaurants`;
+    const port = 1337; // Change this to your server port
+    return `http://localhost:${port}/restaurants/`;
   }
 
-  /**
-   * Initialize restaurant-db database in IndexedDB
-   */
-  static idbInit() {
-    return idb.open('restaurant-db', 1, function (upgradeDb) {
-      switch (upgradeDb.oldVersion) {
-        case 0:
-          upgradeDb.createObjectStore('restaurants');
-      }
+  static get REVIEWS_URL() {
+    const port = 1337; // Change this to your server port
+    return `http://localhost:${port}/reviews/`;
+  }
+
+  static openDatabase() {
+    if(!navigator.serviceWorker){
+      return Promise.resolve();
+    }
+
+    return idb.open('restaurants', 1, function (upgradeDb) {
+      var store = upgradeDb.createObjectStore('restaurants', {
+        keyPath: 'id'
+      });
     });
   }
 
-  /**
-   * Fetch restaurants from restaurant-list.
-   */
-  static getRestaurantsFromDb(dbPromise) {
-    return dbPromise.then(function (db) {
-      if (!db) return;
-      let tx = db.transaction('restaurants');
-      let restaurantsStore = tx.objectStore('restaurants');
-      return restaurantsStore.get('restaurant-list');
+  static populateDatabase(restaurants){
+    return DBHelper.openDatabase().then(function(db){
+      if(!db) return;
+
+      var tx = db.transaction('restaurants', 'readwrite');
+      var store = tx.objectStore('restaurants');
+      restaurants.forEach(function (restaurant) {
+          store.put(restaurant);
+      });
+      return tx.complete;
     });
   }
 
-  /**
-   * Update restaurants to restaurant-list.
-   */
-  static updateRestaurantsInDb(restaurants, dbPromise) {
-    return dbPromise.then(function (db) {
-      if (!db) return;
-      let tx = db.transaction('restaurants', 'readwrite');
-      let restaurantsStore = tx.objectStore('restaurants');
-      restaurantsStore.put(restaurants, 'restaurant-list');
-      tx.complete;
+  static getIdbRestaurants(){
+    return DBHelper.openDatabase().then(function(db){
+      if(!db) return;
+
+      var tx = db.transaction('restaurants');
+      var store = tx.objectStore('restaurants');
+      return store.getAll();
     });
   }
 
@@ -56,30 +58,34 @@ class DBHelper {
    * Fetch all restaurants.
    */
   static fetchRestaurants(callback) {
-    const dbPromise = DBHelper.idbInit();
-
-    DBHelper.getRestaurantsFromDb(dbPromise)
-      .then((restaurants) => {
-        if (restaurants && restaurants.length > 0) {
-          // Fetched restaurants from restaurant-list
-          callback(null, restaurants);
-        } else {
-          return fetch(DBHelper.DATABASE_URL);
-        }
-      }).then(response => {
-        // Got a success response
-        if (!response) return;
-        return response.json();
-      }).then(restaurants => {
-        // Got the restaurants successfully! Fingers crossed!
-        if (!restaurants) return;
-        DBHelper.updateRestaurantsInDb(restaurants, dbPromise);
+    /*let xhr = new XMLHttpRequest();
+    xhr.open('GET', DBHelper.DATABASE_URL);
+    xhr.onload = () => {
+      if (xhr.status === 200) { // Got a success response from server!
+        const json = JSON.parse(xhr.responseText);
+        const restaurants = json.restaurants;
         callback(null, restaurants);
-      }).catch((error) => {
-        // Oops!. Got an error from server or some error while operations!
-        const errorMessage = (`Request failed. Error message: ${error}`);
-        callback(errorMessage, null);
-      });
+      } else { // Oops!. Got an error from server.
+        const error = (`Request failed. Returned status of ${xhr.status}`);
+        callback(error, null);
+      }
+    };
+    xhr.send();*/
+    return DBHelper.getIdbRestaurants().then((restaurants) => {
+      if (restaurants.length) {
+        return restaurants;
+      } else {
+        return fetch(DBHelper.DATABASE_URL)
+          .then(function(response){
+            return response.json();
+        }).then(restaurants => {
+            DBHelper.populateDatabase(restaurants);
+            return restaurants;
+        });
+      }
+    }).then(restaurants => {
+      callback(null, restaurants);
+    });
   }
 
   /**
@@ -142,7 +148,7 @@ class DBHelper {
       if (error) {
         callback(error, null);
       } else {
-        let results = restaurants
+        let results = restaurants;
         if (cuisine != 'all') { // filter by cuisine
           results = results.filter(r => r.cuisine_type == cuisine);
         }
@@ -164,9 +170,9 @@ class DBHelper {
         callback(error, null);
       } else {
         // Get all neighborhoods from all restaurants
-        const neighborhoods = restaurants.map((v, i) => restaurants[i].neighborhood)
+        const neighborhoods = restaurants.map((v, i) => restaurants[i].neighborhood);
         // Remove duplicates from neighborhoods
-        const uniqueNeighborhoods = neighborhoods.filter((v, i) => neighborhoods.indexOf(v) == i)
+        const uniqueNeighborhoods = neighborhoods.filter((v, i) => neighborhoods.indexOf(v) == i);
         callback(null, uniqueNeighborhoods);
       }
     });
@@ -182,9 +188,9 @@ class DBHelper {
         callback(error, null);
       } else {
         // Get all cuisines from all restaurants
-        const cuisines = restaurants.map((v, i) => restaurants[i].cuisine_type)
+        const cuisines = restaurants.map((v, i) => restaurants[i].cuisine_type);
         // Remove duplicates from cuisines
-        const uniqueCuisines = cuisines.filter((v, i) => cuisines.indexOf(v) == i)
+        const uniqueCuisines = cuisines.filter((v, i) => cuisines.indexOf(v) == i);
         callback(null, uniqueCuisines);
       }
     });
@@ -200,27 +206,70 @@ class DBHelper {
   /**
    * Restaurant image URL.
    */
-  static webPImageUrlForRestaurant(restaurant) {
-    return (`/img/webp/${restaurant.photograph}.webp`);
-  }
-
-  static jpegImageUrlForRestaurant(restaurant) {
-    return (`/img/${restaurant.photograph}.jpg`);
+  static imageUrlForRestaurant(restaurant, size) {
+    if(restaurant.id == 10) restaurant.photograph = 10; 
+    return (`dist/img/${restaurant.photograph}-${size}.webp`);
   }
 
   /**
    * Map marker for a restaurant.
    */
   static mapMarkerForRestaurant(restaurant, map) {
-    const marker = new L.marker([restaurant.latlng.lat, restaurant.latlng.lng],
-      {
-        title: restaurant.name,
-        alt: restaurant.name,
-        url: DBHelper.urlForRestaurant(restaurant)
-      })
-    marker.addTo(newMap);
+    const marker = new google.maps.Marker({
+      position: restaurant.latlng,
+      title: restaurant.name,
+      url: DBHelper.urlForRestaurant(restaurant),
+      map: map,
+      animation: google.maps.Animation.DROP}
+    );
     return marker;
   }
-}
 
-export default DBHelper;
+  static addReview(review) {
+    return fetch(DBHelper.REVIEWS_URL, {
+      method: 'post',
+      headers: {
+        'Content-Type' : 'application/json'
+      },
+      body: JSON.stringify(review)
+    });
+  }
+
+  static fetchReviews(id){
+    fetch(DBHelper.REVIEWS_URL)
+          .then(function(response){
+            return response.json();
+        }).then(reviews=> {
+          const reviewsById = reviews.filter(r => r.restaurant_id == id);
+          if(reviewsById)
+            fillReviewsHTML(reviewsById);
+          else
+            fillReviewsHTML(null);
+        });
+  }
+
+  static submitFavRestaurant(id, flag){
+    fetch(`${DBHelper.DATABASE_URL}${id}/?is_favorite=${flag}`, {method: 'put'})
+  }
+
+  static treatPendingRevs(revs) {
+    revs.map( rev => {
+      fetch(DBHelper.REVIEWS_URL, {
+        method: 'post',
+        headers: {
+          'Content-Type' : 'application/json'
+        },
+        body: JSON.stringify(rev)
+      })
+      .then(response => {
+          console.log('posted revs to server');
+          if(response.status === 201){
+              return reviewsStore.revsidb('readwrite').then(function(revsidb) {
+                  return revsidb.delete(rev.id);
+              });
+          }
+      })
+    })
+  }
+
+}

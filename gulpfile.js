@@ -1,121 +1,79 @@
-var gulp = require('gulp');
-var webp = require('gulp-webp');
-var browserify = require('browserify');
-var babelify = require('babelify');
-var sourcemaps = require('gulp-sourcemaps');
-var cleanCSS = require('gulp-clean-css');
-var autoprefixer = require('gulp-autoprefixer');
-var source = require("vinyl-source-stream");
-var buffer = require("vinyl-buffer");
-var uglify = require('gulp-uglify');
-var rename = require('gulp-rename');
+let gulp   = require('gulp'),
+    gutil = require('gulp-util'),
+    jshint = require('gulp-jshint'),
+    sass   = require('gulp-sass'),
+    concat     = require('gulp-concat'),
+    sourcemaps = require('gulp-sourcemaps'),
+    uglify = require('gulp-uglify'),
+    babel = require('gulp-babel'),
+    imagemin = require('gulp-imagemin'),
+    webp = require('gulp-webp'),
+    htmlmin = require('gulp-htmlmin'),
+    input  = {
+      'sass': 'scss/*.scss',
+      'javascript': 'js/*.js'
+    },
+    output = {
+      'stylesheets': 'dist/css',
+      'javascript': 'dist/js'
+    };
 
-var gzip = require('gulp-gzip');
-var gzipStatic = require('connect-gzip-static');
 
-var connect = require('gulp-connect');
+gulp.task('default', ['watch']);
 
-var jsSrcMainList = ['js/dbhelper.js', 'js/main.js'];
-var jsSrcRestaurantList = ['js/dbhelper.js', 'js/restaurant_info.js'];
-
-// webP image conversion task
-gulp.task('webp', function () {
-    gulp.src('img/*.jpg')
-        .pipe(webp({
-            method: 6
-        }))
-        .pipe(gulp.dest('img/webp'));
+gulp.task('copy-imgs', function() {
+  gulp.src('img/*')
+    .pipe(imagemin())
+    .pipe(webp())
+    .pipe(gulp.dest('dist/img'));
 });
 
-// style task
-gulp.task('styles', function () {
-    gulp.src('css/styles.css')
-        .pipe(cleanCSS({
-            compatibility: 'ie8'
-        }))
-        .pipe(autoprefixer({
-            browsers: ['last 2 versions']
-        }))
-        .pipe(rename('styles.min.css'))
-        .pipe(gulp.dest('./css'));
+gulp.task('jshint', function() {
+  return gulp.src(input.javascript)
+    .pipe(jshint())
+    .pipe(jshint.reporter('jshint-stylish'));
 });
 
-// script tasks
-gulp.task('scripts', ['index', 'restaurant'], function () {});
-
-gulp.task('index', function () {
-    jsSrcMainList.map(function (jsFile) {
-        return browserify({
-                entries: [jsFile]
-            })
-            .transform(babelify.configure({
-                presets: ['env']
-            }))
-            .bundle()
-            .pipe(source('index.min.js'))
-            .pipe(buffer())
-            .pipe(sourcemaps.init({
-                loadMaps: true
-            }))
-            .pipe(uglify())
-            .pipe(sourcemaps.write('./'))
-            .pipe(gulp.dest('./js'));
-    });
+gulp.task('build-css', function() {
+  return gulp.src(input.sass)
+    .pipe(sass({
+      outputStyle: 'compressed'
+    }).on('error', sass.logError))
+    .pipe(gulp.dest(output.stylesheets));
 });
 
-gulp.task('restaurant', function () {
-    jsSrcRestaurantList.map(function (jsFile) {
-        return browserify({
-                entries: [jsFile]
-            })
-            .transform(babelify.configure({
-                presets: ['env']
-            }))
-            .bundle()
-            .pipe(source('restaurant.min.js'))
-            .pipe(buffer())
-            .pipe(sourcemaps.init())
-            .pipe(uglify())
-            .pipe(sourcemaps.write('./'))
-            .pipe(gulp.dest('./js'));
-    });
+gulp.task('build-js', function() {
+  return gulp.src(input.javascript)
+    .pipe(sourcemaps.init())
+    .pipe(concat('bundle.js'))
+    .pipe(sourcemaps.write())
+    .pipe(gulp.dest(output.javascript));
 });
 
-// gZip tasks
-gulp.task('gzip', ['gzip-html', 'gzip-css', 'gzip-js'], function () {});
-
-gulp.task('gzip-html', function () {
-    gulp.src('**/*.html')
-        .pipe(gzip())
-        .pipe(gulp.dest('./'));
+gulp.task('uglify-js', function() {
+  return gulp.src(input.javascript)
+    .pipe(sourcemaps.init())
+    //.pipe(concat('bundle-min.js'))
+    .pipe(babel({
+      presets: ['es2015']
+    }).on('error', function(e){
+      console.log(e);
+    }))
+    .pipe(uglify().on('error', function(e){
+      console.log(e);
+    }))
+    .pipe(sourcemaps.write())
+    .pipe(gulp.dest(output.javascript));
 });
 
-gulp.task('gzip-css', function () {
-    gulp.src('css/**/*.min.css')
-        .pipe(gzip())
-        .pipe(gulp.dest('css'));
+gulp.task('minify-html', function() {
+  return gulp.src('*.html')
+    .pipe(htmlmin({collapseWhitespace: true, removeComments: true}))
+    .pipe(gulp.dest('dist'));
 });
 
-gulp.task('gzip-js', function () {
-    gulp.src('js/**/*.min.js')
-        .pipe(gzip())
-        .pipe(gulp.dest('js'));
-});
-
-// Build tasks
-gulp.task('build', ['webp', 'styles', 'scripts', 'gzip'], function () {});
-
-// Serve task
-gulp.task('serve', function () {
-    connect.server({
-        root: "index.html",
-        port: 9000,
-        middleware: function () {
-            return [
-                gzipStatic(__dirname, {
-                    maxAge: 31536000000
-                })
-            ]
-        }
-    });
+gulp.task('watch', function() {
+  gulp.watch(input.javascript, ['jshint', 'build-js', 'uglify-js']);
+  gulp.watch(input.sass, ['build-css']);
+  gulp.watch('/*.html', ['minify-html']);
 });
