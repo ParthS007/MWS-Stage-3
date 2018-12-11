@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#165B8E">
+  <meta name="description" content="Restaurant Reviews App" />
+  <link rel="stylesheet" src="//normalize-css.googlecode.com/svn/trunk/normalize.css" />
+  <link rel="shortcut icon" type="image/png" href="img/icons/icon_64.png" />
+  <link rel="preload" href="css/styles.css" as="style">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="manifest" href="/manifest.json">
+  <!-- https://developer.mozilla.org/en-US/docs/Web/HTML/Preloading_content -->
+  <title>Restaurant Reviews</title>
+</head>
+
+<body>
+  <header>
+    <nav>
+      <h1><a href="/" role="link">Restaurant Reviews</a></h1>
+    </nav>
+  </header>
+
+  <main id="maincontent" role="main">
+    <!-- https://stackoverflow.com/questions/44712753/ -->
+    <section id="map-container" role="presentation">
+      <div id="map"></div>
+    </section>
+    <section>
+      <div class="filter-options">
+        <h2>Filter Results</h2>
+        <select id="neighborhoods-select" name="neighborhoods" role="listbox" onchange="updateRestaurants()" aria-label="Neighborhood Selector">
+          <option value="all">All Neighborhoods</option>
+        </select>
+        <select id="cuisines-select" name="cuisines" role="listbox" onchange="updateRestaurants()" aria-label="Cuisines Selector">
+          <option value="all">All Cuisines</option>
+        </select>
+      </div>
+      <ul id="restaurants-list" role="list"></ul>
+    </section>
+  </main>
+
+  <footer id="footer">
+    Copyright (c) 2017 <a href="/" role="link"><strong>Restaurant Reviews</strong></a> All Rights Reserved.
+  </footer>
+
+  <script type="application/javascript" charset="utf-8" src="js/main.js"></script>
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=<**SecretKey**>&libraries=places&callback=initMap"></script>
+  <script src="js/lazysizes.js" async=""></script>
+</body>
+
+<!-- aria https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/ARIA_Techniques -->
+
+</html>
